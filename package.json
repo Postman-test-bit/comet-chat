@@ -33,6 +33,12 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-transform-optional-chaining": "^7.23.0",
+    "@babel/plugin-transform-nullish-coalescing-operator": "^7.23.0",
+    "@babel/plugin-transform-numeric-separator": "^7.23.0",
+    "@babel/plugin-transform-private-methods": "^7.23.0",
+    "@babel/plugin-transform-class-properties": "^7.23.0",
+    "@babel/plugin-transform-private-property-in-object": "^7.23.0",
     "@arghajit/playwright-pulse-report": "^0.2.6",
     "@playwright/test": "^1.55.0",
     "@testing-library/jest-dom": "5.17.0",
