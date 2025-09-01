@@ -60,17 +60,17 @@ export default defineConfig({
 
     {
       name: "webkit",
-      use: { ...devices["Desktop Safari"], headless: false },
+      use: { ...devices["Desktop Safari"], headless: true },
     },
 
     /* Test against mobile viewports. */
     {
       name: "Mobile Chrome",
-      use: { ...devices["Moto G4"], headless: false },
+      use: { ...devices["Moto G4"], headless: true },
     },
     {
       name: "Mobile Safari",
-      use: { ...devices["iPhone 15 Plus"], headless: false },
+      use: { ...devices["iPhone 15 Plus"], headless: true },
     },
 
     /* Test against branded browsers. */
