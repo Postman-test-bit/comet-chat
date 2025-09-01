@@ -366,27 +366,23 @@ function CometChatHome({ defaultUser, defaultGroup }: CometChatHomeProps) {
   };
   useEffect(() => {
     if (layoutFeatures && layoutFeatures?.tabs && layoutFeatures?.withSideBar) {
-      if (layoutFeatures?.tabs?.includes('chats')) {
-        fetchDefaultConversation();
-        setActiveTab('chats');
-      } else if (layoutFeatures?.tabs?.includes('calls')) {
-        if (loggedInUser) {
-          fetchDefaultCallDetail();
-        }
-        setActiveTab('calls');
-      } else if (layoutFeatures?.tabs?.includes('users')) {
-        setActiveTab('users');
-        fetchDefaultUser();
+      if (layoutFeatures?.tabs?.includes("chats")) {
+        setActiveTab("chats");
+      } else if (layoutFeatures?.tabs?.includes("calls")) {
+        setActiveTab("calls");
+      } else if (layoutFeatures?.tabs?.includes("users")) {
+        setActiveTab("users");
       } else {
-        setActiveTab('groups');
-        fetchDefaultGroup();
+        setActiveTab("groups");
       }
     }
 
     if (!layoutFeatures?.withSideBar) {
-      fetchDefaultConversation();
-      setActiveTab('chats');
+      setActiveTab("chats");
     }
+
+    // Explicitly set selectedItem to undefined to ensure empty state is shown
+    setSelectedItem(undefined);
   }, [layoutFeatures?.tabs, layoutFeatures?.withSideBar, loggedInUser]);
 
   useEffect(() => {
@@ -1795,7 +1791,8 @@ function CometChatHome({ defaultUser, defaultGroup }: CometChatHomeProps) {
   }, [newChat, newChat?.user, newChat?.group]);
 
   useEffect(() => {
-    fetchDefaultConversation();
+    // Remove the fetchDefaultConversation() call to prevent auto-loading a conversation
+    // fetchDefaultConversation();
     setAppState({ type: 'updateSideComponent', payload: { visible: false, type: '' } });
   }, [layoutFeatures?.chatType, defaultUser, defaultGroup]);
 
