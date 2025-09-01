@@ -30,14 +30,14 @@ const CometChatLogin = () => {
   }, []);
 
   async function fetchDefaultUsers() {
-    try {
-      const response = await fetch('https://assets.cometchat.io/sampleapp/v2/sampledata.json');
-      const data: UserJson = await response.json();
-      setDefaultUsers(data.users);
-    } catch (error) {
-      setDefaultUsers(sampleUsers.users as any);
-      console.error('fetching default users failed, using fallback data', error);
-    }
+    // try {
+    // const response = await fetch('https://assets.cometchat.io/sampleapp/v2/sampledata.json');
+    // const data: UserJson = await response.json();
+    // setDefaultUsers(data.users);
+    // } catch (error) {
+    setDefaultUsers(sampleUsers.users as any);
+    // console.error("fetching default users failed, using fallback data", error);
+    // }
   }
 
   async function login(uid: string) {
