@@ -200,6 +200,78 @@ class CometChatHelper {
 }
 test.setTimeout(200000);
 
+
+test.describe("Comet Chat - Tests", async () => {
+  let browser: Browser;
+  let user1Context: BrowserContext;
+  let user2Context: BrowserContext;
+  let user1Page: Page;
+  let user2Page: Page;
+  let user1Chat: CometChatHelper;
+  let user2Chat: CometChatHelper;
+  test.beforeAll(async ({ browser: b }) => {
+    browser = b;
+  });
+  test("8. Unread Message Count", async () => {
+    user1Context = await test.step("Create user1 context", async () => {
+      if (!browser) throw new Error("Browser not initialized");
+      return await browser.newContext();
+    });
+    user1Page = await test.step("Create user1 page", async () => {
+      if (!user1Context) throw new Error("User1 context not initialized");
+      return await user1Context.newPage();
+    });
+    user1Chat = await test.step("Create user1 chat", async () => {
+      if (!user1Page) throw new Error("User1 page not initialized");
+      return new CometChatHelper(user1Page);
+    });
+    await user1Chat.login(config.users.user1.uid);
+    // User1 sends multiple messages
+    await user1Chat.selectConversation(
+      config.users.user1.uid,
+      config.users.user2.uid
+    );
+    await user1Chat.sendMessage("Message 1");
+    await user1Chat.sendMessage("Message 2");
+    await user1Chat.sendMessage("Message 3");
+    await user1Page.waitForTimeout(1000);
+
+    user2Context = await test.step("Create user2 context", async () => {
+      if (!browser) throw new Error("Browser not initialized");
+      return await browser.newContext();
+    });
+    user2Page = await test.step("Create user2 page", async () => {
+      if (!user2Context) throw new Error("User2 context not initialized");
+      return await user2Context.newPage();
+    });
+    user2Chat = await test.step("Create user2 chat", async () => {
+      if (!user2Page) throw new Error("User2 page not initialized");
+      return new CometChatHelper(user2Page);
+    });
+    await user2Chat.login(config.users.user2.uid);
+
+    // Check unread count on User2's conversation list
+    const convo = await user2Chat.chooseConversation(
+      config.users.user2.uid,
+      config.users.user1.uid
+    );
+    const unreadBadge = await convo.locator(
+      "div.cometchat-conversations__trailing-view-badge-count"
+    );
+    await expect(unreadBadge).toBeVisible({ timeout: 5000 });
+    const unreadCount: string | null = await unreadBadge.textContent();
+    expect(unreadCount).not.toBe(null);
+
+    // User2 opens conversation
+    await user2Chat.selectConversation(
+      config.users.user2.uid,
+      config.users.user1.uid
+    );
+
+    // Unread count should be cleared
+    await expect(unreadBadge).toBeHidden({ timeout: 3000 });
+  });
+});
 // Test Suite
 test.describe("CometChat - Complete Test Suite", () => {
   let browser: Browser;
@@ -570,77 +642,7 @@ test.describe("CometChat - Complete Test Suite", () => {
   });
 });
 
-test.describe("Comet Chat - Tests", async () => {
-  let browser: Browser;
-  let user1Context: BrowserContext;
-  let user2Context: BrowserContext;
-  let user1Page: Page;
-  let user2Page: Page;
-  let user1Chat: CometChatHelper;
-  let user2Chat: CometChatHelper;
-  test.beforeAll(async ({ browser: b }) => {
-    browser = b;
-  });
-  test("8. Unread Message Count", async () => {
-    user1Context = await test.step("Create user1 context", async () => {
-      if (!browser) throw new Error("Browser not initialized");
-      return await browser.newContext();
-    });
-    user1Page = await test.step("Create user1 page", async () => {
-      if (!user1Context) throw new Error("User1 context not initialized");
-      return await user1Context.newPage();
-    });
-    user1Chat = await test.step("Create user1 chat", async () => {
-      if (!user1Page) throw new Error("User1 page not initialized");
-      return new CometChatHelper(user1Page);
-    });
-    await user1Chat.login(config.users.user1.uid);
-    // User1 sends multiple messages
-    await user1Chat.selectConversation(
-      config.users.user1.uid,
-      config.users.user2.uid
-    );
-    await user1Chat.sendMessage("Message 1");
-    await user1Chat.sendMessage("Message 2");
-    await user1Chat.sendMessage("Message 3");
-    await user1Page.waitForTimeout(1000);
 
-    user2Context = await test.step("Create user2 context", async () => {
-      if (!browser) throw new Error("Browser not initialized");
-      return await browser.newContext();
-    });
-    user2Page = await test.step("Create user2 page", async () => {
-      if (!user2Context) throw new Error("User2 context not initialized");
-      return await user2Context.newPage();
-    });
-    user2Chat = await test.step("Create user2 chat", async () => {
-      if (!user2Page) throw new Error("User2 page not initialized");
-      return new CometChatHelper(user2Page);
-    });
-    await user2Chat.login(config.users.user2.uid);
-
-    // Check unread count on User2's conversation list
-    const convo = await user2Chat.chooseConversation(
-      config.users.user2.uid,
-      config.users.user1.uid
-    );
-    const unreadBadge = await convo.locator(
-      "div.cometchat-conversations__trailing-view-badge-count"
-    );
-    await expect(unreadBadge).toBeVisible({ timeout: 5000 });
-    const unreadCount: string | null = await unreadBadge.textContent();
-    expect(unreadCount).not.toBe(null);
-
-    // User2 opens conversation
-    await user2Chat.selectConversation(
-      config.users.user2.uid,
-      config.users.user1.uid
-    );
-
-    // Unread count should be cleared
-    await expect(unreadBadge).toBeHidden({ timeout: 3000 });
-  });
-});
 
 // Export types for reuse
 export type { User, TestConfig, MessageData };
