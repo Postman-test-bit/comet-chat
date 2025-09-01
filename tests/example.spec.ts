@@ -570,7 +570,7 @@ test.describe("CometChat - Complete Test Suite", () => {
   });
 });
 
-test.describe.only("Comet Chat - Tests", async () => {
+test.describe("Comet Chat - Tests", async () => {
   let browser: Browser;
   let user1Context: BrowserContext;
   let user2Context: BrowserContext;
