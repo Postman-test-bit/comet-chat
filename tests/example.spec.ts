@@ -318,6 +318,14 @@ test.describe("CometChat - Complete Test Suite", () => {
     await user1Chat.startNewConversation(config.users.user2);
     await user1Chat.sendMessage("Hello User2!, I am User1!");
     await user1Page.waitForTimeout(1500);
+    if (
+      test.info().project.name === "Mobile Chrome" ||
+      test.info().project.name === "Mobile Safari"
+    ) {
+      await user1Page
+        .locator("div.cometchat-message-header__back-button")
+        .click();
+    }
     await user1Chat.startNewConversation(config.users.user3);
     await user1Chat.sendMessage("Hello User3!, I am User1!");
 
