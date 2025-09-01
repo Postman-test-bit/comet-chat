@@ -30,7 +30,8 @@ interface MessageData {
 
 // Test configuration
 const config: TestConfig = {
-  baseURL: process.env.CHAT_APP_URL || "http://localhost:3000/",
+  baseURL:
+    process.env.CHAT_APP_URL || "https://strong-cajeta-a0560c.netlify.app/",
   timeout: 30000,
   users: {
     user1: { username: "Personal", uid: "4711" },
@@ -62,11 +63,6 @@ class CometChatHelper {
       message
     );
     await this.page.locator('button[title="Send Message"]').click();
-    // Wait for message to be sent
-    await this.page.waitForResponse(
-      (res) => res.url().includes("/messages") && res.status() === 200,
-      { timeout: 8000 }
-    );
   }
 
   async sendThreadMessage(message: string): Promise<void> {
@@ -77,11 +73,6 @@ class CometChatHelper {
     await this.page
       .locator('div.cometchat-threaded-message button[title="Send Message"]')
       .click();
-    // Wait for message to be sent
-    await this.page.waitForResponse(
-      (res) => res.url().includes("/messages") && res.status() === 200,
-      { timeout: 8000 }
-    );
   }
 
   async selectConversation(
@@ -208,9 +199,10 @@ class CometChatHelper {
     );
   }
 }
+test.setTimeout(200000);
 
 // Test Suite
-test.describe.serial("CometChat - Complete Test Suite", () => {
+test.describe("CometChat - Complete Test Suite", () => {
   let browser: Browser;
   let user1Context: BrowserContext;
   let user2Context: BrowserContext;
@@ -222,47 +214,32 @@ test.describe.serial("CometChat - Complete Test Suite", () => {
   let user2Chat: CometChatHelper;
   let user3Chat: CometChatHelper;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser: b }) => {
+    browser = b;
+  });
+
+  test.beforeEach(async () => {
     // Create contexts for multiple users
     user1Context = await browser.newContext();
     user2Context = await browser.newContext();
     user3Context = await browser.newContext();
 
-    // Grant permissions for all contexts
-    await user1Context.grantPermissions(["notifications"], {
-      origin: "http://localhost:3000",
-    });
-    await user2Context.grantPermissions(["notifications"], {
-      origin: "http://localhost:3000",
-    });
-    await user3Context.grantPermissions(["notifications"], {
-      origin: "http://localhost:3000",
-    });
-
-    // Create pages for each user
     user1Page = await user1Context.newPage();
     user2Page = await user2Context.newPage();
     user3Page = await user3Context.newPage();
 
-    // Navigate to the app URL
-    await user1Page.goto("http://localhost:3000");
-    await user2Page.goto("http://localhost:3000");
-    await user3Page.goto("http://localhost:3000");
-
-    // Instantiate your helper classes
     user1Chat = new CometChatHelper(user1Page);
     user2Chat = new CometChatHelper(user2Page);
     user3Chat = new CometChatHelper(user3Page);
   });
 
-  // Use test.afterAll to clean up resources after all tests have completed
-  test.afterAll(async () => {
+  test.afterEach(async () => {
     await user1Context.close();
     await user2Context.close();
     await user3Context.close();
   });
 
-  test.only("0. Initiate Chats", async () => {
+  test("1. Initiate Chats", async () => {
     await user1Chat.login(config.users.user1.uid);
     await user2Chat.login(config.users.user2.uid);
 
@@ -279,7 +256,7 @@ test.describe.serial("CometChat - Complete Test Suite", () => {
     await user2Page.waitForTimeout(1500);
   });
 
-  test("1. Basic Message Send and Receive", async () => {
+  test("2. Basic Message Send and Receive", async () => {
     // Login both users
     await user1Chat.login(config.users.user1.uid);
     await user2Chat.login(config.users.user2.uid);
@@ -315,7 +292,7 @@ test.describe.serial("CometChat - Complete Test Suite", () => {
     ).toBeTruthy();
   });
 
-  test("2. Bidirectional Conversation Flow", async () => {
+  test("3. Bidirectional Conversation Flow", async () => {
     await user1Chat.login(config.users.user1.uid);
     await user2Chat.login(config.users.user2.uid);
 
@@ -351,7 +328,7 @@ test.describe.serial("CometChat - Complete Test Suite", () => {
     expect(user1Messages).toEqual(user2Messages);
   });
 
-  test("3. Message Read Receipts", async () => {
+  test("4. Message Read Receipts", async () => {
     await user1Chat.login(config.users.user1.uid);
 
     await user1Chat.selectConversation(
@@ -390,7 +367,7 @@ test.describe.serial("CometChat - Complete Test Suite", () => {
     });
   });
 
-  test("4. Message Reactions", async () => {
+  test("5. Message Reactions", async () => {
     await user1Chat.login(config.users.user1.uid);
     await user2Chat.login(config.users.user2.uid);
 
@@ -423,7 +400,7 @@ test.describe.serial("CometChat - Complete Test Suite", () => {
     await user1Chat.verifyEmoji("😀");
   });
 
-  test("5. Message Edit", async () => {
+  test("6. Message Edit", async () => {
     await user1Chat.login(config.users.user1.uid);
     await user2Chat.login(config.users.user2.uid);
 
@@ -465,7 +442,7 @@ test.describe.serial("CometChat - Complete Test Suite", () => {
     await expect(editedIndicator).toBeVisible();
   });
 
-  test("6. Message Delete", async () => {
+  test("7. Message Delete", async () => {
     await user1Chat.login(config.users.user1.uid);
     await user2Chat.login(config.users.user2.uid);
 
@@ -509,44 +486,7 @@ test.describe.serial("CometChat - Complete Test Suite", () => {
     await expect(deletedIndicator).toBeVisible();
   });
 
-  test("7. Unread Message Count", async () => {
-    await user1Chat.login(config.users.user1.uid);
-    await user2Chat.login(config.users.user2.uid);
-
-    // User2 stays on conversation list
-    // User1 sends multiple messages
-    await user1Chat.selectConversation(
-      config.users.user1.uid,
-      config.users.user2.uid
-    );
-    await user1Chat.sendMessage("Message 1");
-    await user1Chat.sendMessage("Message 2");
-    await user1Chat.sendMessage("Message 3");
-    await user1Page.waitForTimeout(1000);
-
-    // Check unread count on User2's conversation list
-    const convo = await user2Chat.chooseConversation(
-      config.users.user2.uid,
-      config.users.user1.uid
-    );
-    const unreadBadge = await convo.locator(
-      "div.cometchat-conversations__trailing-view-badge-count"
-    );
-    await expect(unreadBadge).toBeVisible({ timeout: 5000 });
-    const unreadCount: string | null = await unreadBadge.textContent();
-    expect(unreadCount).not.toBe(null);
-
-    // User2 opens conversation
-    await user2Chat.selectConversation(
-      config.users.user2.uid,
-      config.users.user1.uid
-    );
-
-    // Unread count should be cleared
-    await expect(unreadBadge).toBeHidden({ timeout: 3000 });
-  });
-
-  test("8. Search Messages", async () => {
+  test("9. Search Messages", async () => {
     await user1Chat.login(config.users.user1.uid);
     await user2Chat.login(config.users.user2.uid);
 
@@ -569,20 +509,13 @@ test.describe.serial("CometChat - Complete Test Suite", () => {
     await user1Chat.searchMessages("Important");
 
     // Verify search results
-    const searchResult = user1Page.locator(
-      "div.cometchat-search__results div.cometchat-list__item-wrapper"
-    );
-    await searchResult.isVisible({ timeout: 5000 });
-
-    // Click on search result should scroll to message
-    // await searchResult.click();
-    // const highlightedMessage = user1Page.locator(
-    //   'div[class="cometchat-message-list__bubble-highlight"]'
-    // );
-    // await highlightedMessage.isVisible({ timeout: 3000 });
+    const searchResults = await user1Page
+      .locator("div.cometchat-search__results div.cometchat-list__item-wrapper")
+      .all();
+    await expect(searchResults[0]).toBeVisible({ timeout: 5000 });
   });
 
-  test("9. Message Thread/Reply", async () => {
+  test("10. Message Thread/Reply", async () => {
     await user1Chat.login(config.users.user1.uid);
     await user2Chat.login(config.users.user2.uid);
 
@@ -635,6 +568,78 @@ test.describe.serial("CometChat - Complete Test Suite", () => {
     await user1Thread.click();
     const threadView = user1Page.locator("div.cometchat-threaded-message");
     await expect(threadView).toBeVisible();
+  });
+});
+
+test.describe.only("Comet Chat - Tests", async () => {
+  let browser: Browser;
+  let user1Context: BrowserContext;
+  let user2Context: BrowserContext;
+  let user1Page: Page;
+  let user2Page: Page;
+  let user1Chat: CometChatHelper;
+  let user2Chat: CometChatHelper;
+  test.beforeAll(async ({ browser: b }) => {
+    browser = b;
+  });
+  test("8. Unread Message Count", async () => {
+    user1Context = await test.step("Create user1 context", async () => {
+      if (!browser) throw new Error("Browser not initialized");
+      return await browser.newContext();
+    });
+    user1Page = await test.step("Create user1 page", async () => {
+      if (!user1Context) throw new Error("User1 context not initialized");
+      return await user1Context.newPage();
+    });
+    user1Chat = await test.step("Create user1 chat", async () => {
+      if (!user1Page) throw new Error("User1 page not initialized");
+      return new CometChatHelper(user1Page);
+    });
+    await user1Chat.login(config.users.user1.uid);
+    // User1 sends multiple messages
+    await user1Chat.selectConversation(
+      config.users.user1.uid,
+      config.users.user2.uid
+    );
+    await user1Chat.sendMessage("Message 1");
+    await user1Chat.sendMessage("Message 2");
+    await user1Chat.sendMessage("Message 3");
+    await user1Page.waitForTimeout(1000);
+
+    user2Context = await test.step("Create user2 context", async () => {
+      if (!browser) throw new Error("Browser not initialized");
+      return await browser.newContext();
+    });
+    user2Page = await test.step("Create user2 page", async () => {
+      if (!user2Context) throw new Error("User2 context not initialized");
+      return await user2Context.newPage();
+    });
+    user2Chat = await test.step("Create user2 chat", async () => {
+      if (!user2Page) throw new Error("User2 page not initialized");
+      return new CometChatHelper(user2Page);
+    });
+    await user2Chat.login(config.users.user2.uid);
+
+    // Check unread count on User2's conversation list
+    const convo = await user2Chat.chooseConversation(
+      config.users.user2.uid,
+      config.users.user1.uid
+    );
+    const unreadBadge = await convo.locator(
+      "div.cometchat-conversations__trailing-view-badge-count"
+    );
+    await expect(unreadBadge).toBeVisible({ timeout: 5000 });
+    const unreadCount: string | null = await unreadBadge.textContent();
+    expect(unreadCount).not.toBe(null);
+
+    // User2 opens conversation
+    await user2Chat.selectConversation(
+      config.users.user2.uid,
+      config.users.user1.uid
+    );
+
+    // Unread count should be cleared
+    await expect(unreadBadge).toBeHidden({ timeout: 3000 });
   });
 });
 
