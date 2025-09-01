@@ -30,8 +30,7 @@ interface MessageData {
 
 // Test configuration
 const config: TestConfig = {
-  baseURL:
-    process.env.CHAT_APP_URL || "https://strong-cajeta-a0560c.netlify.app/",
+  baseURL: process.env.CHAT_APP_URL || "https://pre-comet-chat.netlify.app/",
   timeout: 30000,
   users: {
     user1: { username: "Personal", uid: "4711" },
