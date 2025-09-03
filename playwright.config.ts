@@ -25,6 +25,7 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ["list"], // Keep the default 'list' reporter or use any other you prefer
+    ["html"],
     [
       "@arghajit/playwright-pulse-report",
       {
