@@ -26,6 +26,7 @@ export default defineConfig({
   reporter: [
     ["list"], // Keep the default 'list' reporter or use any other you prefer
     ["html"],
+    ["json", { outputFile: "./report.json" }],
     [
       "@arghajit/playwright-pulse-report",
       {
